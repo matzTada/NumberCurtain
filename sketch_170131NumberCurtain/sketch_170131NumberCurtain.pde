@@ -113,6 +113,10 @@ class MyBox {
   void updateAngleIncrease(float _increase) {
     angleIncrease += _increase;
   }
+  
+    void resetAngleIncrease(float _increase) {
+    angleIncrease = _increase;
+  }
 }
 
 void keyPressed() {
@@ -127,6 +131,12 @@ void keyPressed() {
       tempBox.updateAngleIncrease(-2);
     }  
     break;
+  }
+}
+
+void mouseClicked() {
+  for (MyBox tempBox : boxes) {
+    tempBox.updateAngleIncrease(random(-5, 5));
   }
 }
 
