@@ -9,6 +9,16 @@ float dim = 50;
 
 ArrayList<MyBox> boxes = new ArrayList<MyBox>();
 
+import processing.serial.*;
+Serial myPort;  // Create object from Serial class
+//this is kind of stupid way. but... hum...
+int phase = 0; 
+int lenH = 0;
+int lenL = 0;
+int packetLen = 0;
+String payload = "";
+
+
 void setup() {
   size(800, 800, P3D);
   noStroke();
@@ -21,6 +31,10 @@ void setup() {
       }
     }
   }
+
+  String portName = Serial.list()[0];
+  myPort = new Serial(this, portName, 9600);
+  println(Serial.list());
 }
 
 void draw() {
@@ -113,5 +127,53 @@ void keyPressed() {
       tempBox.updateAngleIncrease(-2);
     }  
     break;
+  }
+}
+
+void serialEvent(Serial myPort) {
+  int c = myPort.read();
+  if (c == 0x7E) { 
+    phase = 1;
+    payload = "";
+  } else if (phase == 1) {
+    phase = 2; 
+    lenH = c;
+  } else if (phase == 2) {
+    phase = 3; 
+    lenL = c;
+    packetLen = lenH * 256 + lenL;
+  } else if (phase == 3) {
+    payload += char(c);
+    if (payload.length() >= packetLen) {
+      println(payload);
+      for (int i = 1; i < 1 + 5; i++) { 
+        print(hex(byte(payload.charAt(i))) + " ");
+      }
+      println("");
+      int addrLItr = 6;
+      int addrL = payload.charAt(addrLItr);
+      print(hex(byte(payload.charAt(addrLItr))) + " ");
+      for (int i = addrLItr + 1; i < addrLItr + 1 + 3; i++) { 
+        addrL *= 256;
+        addrL += int(payload.charAt(i));
+        print(hex(byte(payload.charAt(i))) + " ");
+      }
+      println("");
+      println(hex(addrL));
+
+      if (addrL == 0x40AB9752) { //with LEGO
+        println("LEGO");
+        for (MyBox tempBox : boxes) {
+          tempBox.updateAngleIncrease(2);
+        }
+      } else if (addrL == 0x40B0AE0A) { //without Arduino
+        println("No-duino");
+        for (MyBox tempBox : boxes) {
+          tempBox.updateAngleIncrease(-2);
+        }
+      }
+
+      phase = 0;
+    }
   }
 }
