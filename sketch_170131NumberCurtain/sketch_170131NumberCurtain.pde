@@ -26,13 +26,13 @@ void setup() {
 void draw() {
   background(0);
 
+  pushMatrix();
+  //camera
   ambientLight(63, 31, 31);
   directionalLight(255, 255, 255, -1, 0, 0);
   pointLight(63, 127, 255, mouseX, mouseY, 200);
   spotLight(100, 100, 100, mouseX, mouseY, 200, 0, 0, -1, PI, 2);
-
-  //カメラを定義、マウスの位置でカメラの位置が変化する
-  camera(mouseX, mouseY, 200, width/2.0, height/2.0, 0, 0, 1, 0);
+  camera(mouseX, mouseY, 200, width/2.0, height/2.0, 0, 0, 1, 0);  //カメラを定義、マウスの位置でカメラの位置が変化する
 
   translate(width / 2, height / 2, -20);
   cnt++;
@@ -55,6 +55,17 @@ void draw() {
     text(loopCnt++%10, 0, 0);
     popMatrix();
   }
+
+  popMatrix();
+
+  //get average angleIncrease
+  float aveAngleIncrease = 0;
+  for (MyBox tempBox : boxes) {
+    aveAngleIncrease += tempBox.angleIncrease;
+  }
+  aveAngleIncrease /= boxes.size();
+  fill(255);  
+  text(aveAngleIncrease, width * 7 / 8, height * 7 / 8);
 }
 
 class MyBox {
@@ -83,5 +94,24 @@ class MyBox {
 
   void update(float _angle) {
     angle += _angle;
+  }
+
+  void updateAngleIncrease(float _increase) {
+    angleIncrease += _increase;
+  }
+}
+
+void keyPressed() {
+  switch(key) {
+  case 'a':
+    for (MyBox tempBox : boxes) {
+      tempBox.updateAngleIncrease(2);
+    }
+    break;
+  case 'A':
+    for (MyBox tempBox : boxes) {
+      tempBox.updateAngleIncrease(-2);
+    }  
+    break;
   }
 }
